@@ -1,0 +1,17 @@
+{
+  "name": "KERIGMA 24H — Relógio de Oração",
+  "short_name": "KERIGMA 24H",
+  "description": "Rede de Oração, Evangelização e Discipulado — Assembleia de Deus Jardim Del Rey",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#000D2E",
+  "theme_color": "#0057FF",
+  "orientation": "portrait",
+  "icons": [
+    { "src": "/icons/icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "/icons/icon-512.png", "sizes": "512x512", "type": "image/png" },
+    { "src": "/icons/icon-maskable.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ],
+  "categories": ["religious", "productivity"],
+  "lang": "pt-BR"
+}
