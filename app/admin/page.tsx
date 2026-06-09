@@ -5,8 +5,10 @@ import { motion, AnimatePresence } from 'framer-motion';
 import {
   Lock, LayoutDashboard, Users, Clock, BookOpen, Sparkles,
   Download, Trash2, MessageSquare, RefreshCw, LogOut, Eye, EyeOff,
-  AlertCircle, Search, X, CheckCircle2, Target
+  AlertCircle, Search, X, CheckCircle2, Target, LayoutGrid, CircleDot
 } from 'lucide-react';
+
+type ModoRelogio = 'clock' | 'grid';
 import { toast } from 'sonner';
 import { sendWhatsApp, generateWhatsAppMessage } from '@/lib/utils';
 import type { Inscricao, HorarioSlot, Stats, PedidoOracao, Gratidao } from '@/types';
@@ -82,25 +84,45 @@ function AdminDashboard({ onLogout }: { onLogout: () => void }) {
   const [gratidoes, setGratidoes] = useState<Gratidao[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
+  const [modo, setModo] = useState<ModoRelogio>('clock');
+  const [savingModo, setSavingModo] = useState(false);
 
   const fetchAll = useCallback(async () => {
     setLoading(true);
     try {
-      const [i, h, s, p, g] = await Promise.all([
+      const [i, h, s, p, g, c] = await Promise.all([
         fetch('/api/inscricoes').then((r) => r.json()),
         fetch('/api/horarios').then((r) => r.json()),
         fetch('/api/stats').then((r) => r.json()),
         fetch('/api/pedidos').then((r) => r.json()),
         fetch('/api/gratidoes').then((r) => r.json()),
+        fetch('/api/config').then((r) => r.json()),
       ]);
       if (Array.isArray(i)) setInscricoes(i);
       if (Array.isArray(h)) setHorarios(h);
       if (s?.stats) setStats(s.stats);
       if (Array.isArray(p)) setPedidos(p);
       if (Array.isArray(g)) setGratidoes(g);
+      if (c?.modo_relogio) setModo(c.modo_relogio as ModoRelogio);
     } catch { toast.error('Erro ao carregar dados'); }
     finally { setLoading(false); }
   }, []);
+
+  async function changeModo(novoModo: ModoRelogio) {
+    setSavingModo(true);
+    try {
+      const res = await fetch('/api/config', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ modo_relogio: novoModo }),
+      });
+      if (res.ok) {
+        setModo(novoModo);
+        toast.success(`Modo alterado para ${novoModo === 'clock' ? 'Relógio Circular' : 'Grade de Horários'}`);
+      }
+    } catch { toast.error('Erro ao salvar modo'); }
+    finally { setSavingModo(false); }
+  }
 
   useEffect(() => { fetchAll(); }, [fetchAll]);
 
@@ -233,6 +255,64 @@ function AdminDashboard({ onLogout }: { onLogout: () => void }) {
                 <div className="text-3xl font-black text-kerigma-orange mb-1">{gratidoes.length}</div>
                 <div className="text-white/40 text-sm">respostas compartilhadas</div>
               </div>
+            </div>
+
+            {/* ── Modo de exibição do Relógio ── */}
+            <div className="glass rounded-2xl p-6" style={{ border: '1px solid rgba(0,87,255,0.2)' }}>
+              <div className="flex items-center gap-3 mb-4">
+                <div className="w-9 h-9 rounded-xl glass-blue flex items-center justify-center">
+                  <CircleDot size={16} className="text-kerigma-light" />
+                </div>
+                <div>
+                  <h3 className="text-white font-bold text-sm">Modo de Exibição do Relógio</h3>
+                  <p className="text-white/40 text-xs">Escolha como os membros veem e selecionam os horários</p>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                {([
+                  {
+                    key: 'clock' as ModoRelogio,
+                    icon: CircleDot,
+                    title: 'Relógio Circular',
+                    desc: 'Visualização em formato de relógio SVG 24h com arcos coloridos',
+                  },
+                  {
+                    key: 'grid' as ModoRelogio,
+                    icon: LayoutGrid,
+                    title: 'Grade de Horários',
+                    desc: 'Cards organizados por período: Madrugada, Manhã, Tarde, Noite',
+                  },
+                ] as { key: ModoRelogio; icon: typeof CircleDot; title: string; desc: string }[]).map(({ key, icon: Icon, title, desc }) => {
+                  const active = modo === key;
+                  return (
+                    <button
+                      key={key}
+                      onClick={() => !active && changeModo(key)}
+                      disabled={savingModo || active}
+                      className={`relative rounded-2xl p-4 text-left transition-all duration-200 border ${
+                        active
+                          ? 'bg-kerigma-blue/20 border-kerigma-blue/50'
+                          : 'glass border-white/10 hover:border-kerigma-blue/30'
+                      }`}
+                    >
+                      {active && (
+                        <span className="absolute top-3 right-3 text-xs font-bold text-kerigma-light bg-kerigma-blue/30 px-2 py-0.5 rounded-full">
+                          Ativo
+                        </span>
+                      )}
+                      <Icon size={22} className={`mb-2 ${active ? 'text-kerigma-light' : 'text-white/40'}`} />
+                      <div className={`font-bold text-sm mb-1 ${active ? 'text-white' : 'text-white/60'}`}>{title}</div>
+                      <div className="text-xs text-white/30 leading-relaxed">{desc}</div>
+                    </button>
+                  );
+                })}
+              </div>
+              {savingModo && (
+                <p className="text-xs text-kerigma-light/60 mt-3 flex items-center gap-1">
+                  <RefreshCw size={11} className="animate-spin" /> Salvando…
+                </p>
+              )}
             </div>
           </motion.div>
         )}

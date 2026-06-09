@@ -123,6 +123,23 @@ after insert or delete on inscricoes
 for each row execute function update_horario_status();
 
 -- ============================================================
+-- CONFIGURACOES (modo_relogio, etc.)
+-- ============================================================
+create table if not exists configuracoes (
+  chave text primary key,
+  valor text not null,
+  updated_at timestamptz default now()
+);
+
+insert into configuracoes (chave, valor) values ('modo_relogio', 'clock')
+on conflict do nothing;
+
+alter table configuracoes enable row level security;
+-- Somente service_role pode ler/escrever configurações
+create policy "service_only_configuracoes" on configuracoes
+  using (false);
+
+-- ============================================================
 -- INDEXES
 -- ============================================================
 create index if not exists idx_inscricoes_horario  on inscricoes(horario_id);

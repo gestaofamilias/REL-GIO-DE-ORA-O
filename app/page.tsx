@@ -18,7 +18,10 @@ import { HORAS_DO_DIA } from '@/lib/utils';
 
 /* SSR desabilitado para componentes com SVG de ponto-flutuante ou canvas */
 const PrayerClock = dynamic(() => import('@/components/PrayerClock'), { ssr: false });
+const GridClock   = dynamic(() => import('@/components/GridClock'),   { ssr: false });
 const CoverageChart = dynamic(() => import('@/components/CoverageChart'), { ssr: false });
+
+type ModoRelogio = 'clock' | 'grid';
 
 const INITIAL_STATS: Stats = {
   total_participantes: 0,
@@ -61,16 +64,18 @@ export default function HomePage() {
   const [pedidos, setPedidos] = useState<PedidoOracao[]>([]);
   const [gratidoes, setGratidoes] = useState<Gratidao[]>([]);
   const [selectedSlot, setSelectedSlot] = useState<HorarioSlot | null>(null);
+  const [modo, setModo] = useState<ModoRelogio>('clock');
   const clockRef = useRef<HTMLElement | null>(null);
 
   const fetchData = useCallback(async () => {
     try {
-      const [horariosRes, statsRes, inscricoesRes, pedidosRes, gratidoesRes] = await Promise.allSettled([
+      const [horariosRes, statsRes, inscricoesRes, pedidosRes, gratidoesRes, configRes] = await Promise.allSettled([
         fetch('/api/horarios').then((r) => r.json()),
         fetch('/api/stats').then((r) => r.json()),
         fetch('/api/inscricoes').then((r) => r.json()),
         fetch('/api/pedidos').then((r) => r.json()),
         fetch('/api/gratidoes').then((r) => r.json()),
+        fetch('/api/config').then((r) => r.json()),
       ]);
 
       if (horariosRes.status === 'fulfilled' && Array.isArray(horariosRes.value) && horariosRes.value.length > 0) {
@@ -87,6 +92,9 @@ export default function HomePage() {
       }
       if (gratidoesRes.status === 'fulfilled' && Array.isArray(gratidoesRes.value)) {
         setGratidoes(gratidoesRes.value);
+      }
+      if (configRes.status === 'fulfilled' && configRes.value?.modo_relogio) {
+        setModo(configRes.value.modo_relogio as ModoRelogio);
       }
     } catch {
       // Keep demo data on API error
@@ -133,9 +141,12 @@ export default function HomePage() {
         {/* Urgency panel */}
         <UrgencyPanel slots={slots} onSelectSlot={setSelectedSlot} />
 
-        {/* The clock — main feature */}
+        {/* Clock — modo controlado pelo admin */}
         <section id="relogio" ref={clockRef}>
-          <PrayerClock slots={slots} onSelectSlot={setSelectedSlot} />
+          {modo === 'grid'
+            ? <GridClock   slots={slots} onSelectSlot={setSelectedSlot} />
+            : <PrayerClock slots={slots} onSelectSlot={setSelectedSlot} />
+          }
         </section>
 
         {/* Intercessor Wall — people praying */}
