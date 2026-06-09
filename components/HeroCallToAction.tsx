@@ -123,29 +123,6 @@ export default function HeroCallToAction({ onAssumirHorario, percentual, totalIn
         </motion.p>
       </div>
 
-      {/* Praying hands illustration */}
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ delay: 0.6 }}
-        className="absolute right-0 top-1/2 -translate-y-1/2 opacity-5 pointer-events-none hidden lg:block"
-      >
-        <svg width="300" height="300" viewBox="0 0 300 300" fill="none">
-          {/* Stylized praying hands */}
-          <path d="M150 40 C145 60, 130 80, 120 120 C115 140, 118 160, 125 180 L150 260 L175 180 C182 160, 185 140, 180 120 C170 80, 155 60, 150 40Z"
-            fill="url(#handsGrad)" />
-          <path d="M120 120 C100 110, 85 115, 78 130 C72 145, 80 165, 95 175 L125 185"
-            fill="url(#handsGrad)" />
-          <path d="M180 120 C200 110, 215 115, 222 130 C228 145, 220 165, 205 175 L175 185"
-            fill="url(#handsGrad)" />
-          <defs>
-            <linearGradient id="handsGrad" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0%" stopColor="#4DA6FF" />
-              <stop offset="100%" stopColor="#0057FF" />
-            </linearGradient>
-          </defs>
-        </svg>
-      </motion.div>
     </section>
   );
 }
