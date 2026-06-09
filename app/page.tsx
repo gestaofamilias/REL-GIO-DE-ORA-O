@@ -11,7 +11,6 @@ import UrgencyPanel from '@/components/UrgencyPanel';
 import IntercessorWall from '@/components/IntercessorWall';
 import KerigmaSection from '@/components/KerigmaSection';
 import ImpactMap from '@/components/ImpactMap';
-import Gamification from '@/components/Gamification';
 import PrayerRequestsSection from '@/components/PrayerRequestsSection';
 import GratitudeWall from '@/components/GratitudeWall';
 import type { HorarioSlot, Inscricao, Stats, PedidoOracao, Gratidao } from '@/types';
@@ -150,9 +149,6 @@ export default function HomePage() {
 
         {/* Coverage Charts */}
         <CoverageChart slots={slots} />
-
-        {/* Gamification */}
-        <Gamification />
 
         {/* Kerigma Section */}
         <KerigmaSection />
